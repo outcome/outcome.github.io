@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS:GO Template Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .search-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        input, select, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+        th:hover {
+            background-color: #e8e8e8;
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: #f44336;
+            text-align: center;
+            padding: 20px;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CS:GO Template Notifications</h1>
+        
+        <div class="controls">
+            <div class="search-filter">
+                <label for="minTemplate">Template Range:</label>
+                <input type="number" id="minTemplate" placeholder="Min" min="0">
+                <span>to</span>
+                <input type="number" id="maxTemplate" placeholder="Max" min="0">
+            </div>
+            
+            <div class="search-filter">
+                <label for="priceRange">Price Range (USD):</label>
+                <input type="number" id="minPrice" placeholder="Min" step="0.01" min="0">
+                <span>to</span>
+                <input type="number" id="maxPrice" placeholder="Max" step="0.01" min="0">
+            </div>
+            
+            <div class="search-filter">
+                <label for="sortBy">Sort By:</label>
+                <select id="sortBy">
+                    <option value="template_number">Template Number</option>
+                    <option value="price_usd">Price (USD)</option>
+                    <option value="timestamp">Date</option>
+                </select>
+                <select id="sortDirection">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </div>
+            
+            <button id="loadJsonBtn">Load JSON File</button>
+        </div>
+        
+        <div id="results">
+            <div class="no-data">Please load a notification_history.json file to begin</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create file input element
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.id = 'fileInput';
+            fileInput.accept = '.json';
+            fileInput.style.display = 'none';
+            document.body.appendChild(fileInput);
+            
+            // Set up event listeners
+            document.getElementById('loadJsonBtn').addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            document.getElementById('minTemplate').addEventListener('input', updateTable);
+            document.getElementById('maxTemplate').addEventListener('input', updateTable);
+            document.getElementById('minPrice').addEventListener('input', updateTable);
+            document.getElementById('maxPrice').addEventListener('input', updateTable);
+            document.getElementById('sortBy').addEventListener('change', updateTable);
+            document.getElementById('sortDirection').addEventListener('change', updateTable);
+        });
+
+        let notificationsData = null;
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('results').innerHTML = '<div class="loading">Loading notification data...</div>';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    notificationsData = JSON.parse(e.target.result);
+                    updateTable();
+                } catch (error) {
+                    document.getElementById('results').innerHTML = `<div class="error">Error parsing JSON file: ${error.message}</div>`;
+                }
+            };
+            reader.onerror = function() {
+                document.getElementById('results').innerHTML = '<div class="error">Error reading file</div>';
+            };
+            reader.readAsText(file);
+        }
+
+        function updateTable() {
+            if (!notificationsData || !notificationsData.notified_templates) {
+                return;
+            }
+
+            const minTemplate = document.getElementById('minTemplate').value;
+            const maxTemplate = document.getElementById('maxTemplate').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+            const sortBy = document.getElementById('sortBy').value;
+            const sortDirection = document.getElementById('sortDirection').value;
+
+            // Convert data object to array for easier filtering and sorting
+            let items = Object.entries(notificationsData.notified_templates).map(([key, value]) => {
+                // Ensure price_usd is a number
+                if (typeof value.price_usd !== 'number') {
+                    // If price_usd is not a number, try to extract it from converted_price
+                    if (value.converted_price && value.converted_price.includes('USD')) {
+                        const match = value.converted_price.match(/USD\s*([\d.]+)/);
+                        if (match && match[1]) {
+                            value.price_usd = parseFloat(match[1]);
+                        }
+                    }
+                    // If still not a number, set to 0
+                    if (isNaN(value.price_usd)) {
+                        value.price_usd = 0;
+                    }
+                }
+                return value;
+            });
+
+            // Apply template range filter
+            if (minTemplate) {
+                const minTemplateValue = parseInt(minTemplate);
+                items = items.filter(item => item.template_number >= minTemplateValue);
+            }
+            if (maxTemplate) {
+                const maxTemplateValue = parseInt(maxTemplate);
+                items = items.filter(item => item.template_number <= maxTemplateValue);
+            }
+
+            // Apply price filter
+            if (minPrice) {
+                const minPriceValue = parseFloat(minPrice);
+                items = items.filter(item => item.price_usd >= minPriceValue);
+            }
+            if (maxPrice) {
+                const maxPriceValue = parseFloat(maxPrice);
+                items = items.filter(item => item.price_usd <= maxPriceValue);
+            }
+
+            // Sort data
+            items.sort((a, b) => {
+                let valA = a[sortBy];
+                let valB = b[sortBy];
+                
+                // For numeric values
+                if (sortBy === 'price_usd' || sortBy === 'template_number' || sortBy === 'timestamp') {
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
+                    return sortDirection === 'asc' ? valA - valB : valB - valA;
+                }
+                
+                // For string values
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                }
+                
+                return 0;
+            });
+
+            // Generate table
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Charm</th>
+                            <th onclick="sortByColumn('template_number')">Template Number</th>
+                            <th onclick="sortByColumn('price_usd')">Price (USD)</th>
+                            <th>Page</th>
+                            <th onclick="sortByColumn('timestamp')">Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            if (items.length === 0) {
+                tableHTML += `<tr><td colspan="6" style="text-align: center;">No matching items found</td></tr>`;
+            } else {
+                items.forEach(item => {
+                    tableHTML += `
+                        <tr>
+                            <td><a href="${item.link}" target="_blank">${item.name || "Unknown"}</a></td>
+                            <td>${item.template_number}</td>
+                            <td>$${item.price_usd.toFixed(2)} (${item.price})</td>
+                            <td>${item.page || "N/A"}</td>
+                            <td>${formatTimestamp(item.timestamp)}</td>
+                            <td><a href="${item.inspect_link}" target="_blank">Inspect</a></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            tableHTML += `
+                    </tbody>
+                </table>
+                <p>Showing ${items.length} items</p>
+            `;
+
+            document.getElementById('results').innerHTML = tableHTML;
+        }
+
+        function sortByColumn(column) {
+            const sortBy = document.getElementById('sortBy');
+            const sortDirection = document.getElementById('sortDirection');
+            
+            if (sortBy.value === column) {
+                // Toggle sort direction if clicking the same column
+                sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+            } else {
+                // Set to this column and default to ascending
+                sortBy.value = column;
+                sortDirection.value = 'asc';
+            }
+            
+            updateTable();
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleString();
+        }
+    </script>
+</body>
+</html>
