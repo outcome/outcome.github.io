@@ -1,231 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>post</title>
-    <style>
-        @font-face {
-            font-family: 'MainFont';
-            src: url('media/font.otf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        
-        @font-face {
-            font-family: 'UserFont'; /* Give it a name to reference in CSS */
-            src: url('media/userfont.ttf') format('truetype'); /* Path to the font */
-            font-weight: normal;
-            font-style: normal;
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'MainFont', Arial, sans-serif; /* Apply font */
-        }
-
-        /* Background video styling */
-        #background-video {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            z-index: -1;
-            transform: translate(-50%, -50%);
-            display: none; /* Hide initially */
-        }
-
-        /* Frosted glass effect */
-        .frosted-glass {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 300px;
-        }
-
-        .profile-pic {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid white;
-            margin-bottom: 10px;
-        }
-
-        .user-title {
-            font-family: 'UserFont', sans-serif; /* Use the custom font for this class */
-            font-weight: bold;
-            font-size: 40px;
-            color: black;
-            /* Use text-shadow to simulate a stroke */
-            text-shadow: 
-                -2px -2px 0px white,  
-                2px -2px 0px white,
-                -2px 2px 0px white,
-                2px 2px 0px white; /* Adjust values for desired stroke width */
-            margin-bottom: -10px;
-        }
-
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 0px; /* Increased margin for more distance */
-        }
-
-        .social-links a {
-            display: inline-block;
-        }
-
-        .social-links img {
-            width: 40px; /* Updated to 32px */
-            height: 40px; /* Updated to 32px */
-        }
-
-        /* Overlay styling */
-        #overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: black; /* Solid black background */
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        /* Volume Slider */
-        #volume-slider {
-            width: 80%;
-            margin: 15px auto; /* Increased margin for more distance */
-            background: #000; /* Black background for the slider */
-            border-radius: 10px;
-        }
-
-        /* Styling the slider for black and white */
-        #volume-slider::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 5px;
-            background: #000; /* Black track background */
-            border-radius: 5px;
-        }
-
-        #volume-slider::-webkit-slider-thumb {
-            width: 20px;
-            height: 20px;
-            background: #fff; /* White thumb */
-            border-radius: 50%;
-            border: 2px solid #333; /* Dark border around the thumb */
-            cursor: pointer;
-            -webkit-appearance: none;
-        }
-
-        #volume-slider::-moz-range-track {
-            width: 100%;
-            height: 5px;
-            background: #000; /* Black track background */
-            border-radius: 5px;
-        }
-
-        #volume-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #fff; /* White thumb */
-            border-radius: 50%;
-            border: 2px solid #333; /* Dark border around the thumb */
-            cursor: pointer;
-        }
-
-        #volume-slider::-ms-track {
-            width: 100%;
-            height: 5px;
-            background: #000; /* Black track background */
-            border-radius: 5px;
-            border-color: transparent;
-            border-width: 5px 0;
-            color: transparent;
-        }
-
-        #volume-slider::-ms-thumb {
-            width: 20px;
-            height: 20px;
-            background: #fff; /* White thumb */
-            border-radius: 50%;
-            border: 2px solid #333; /* Dark border around the thumb */
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>outcome.github.io</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-
-    <!-- Background Video -->
-    <video id="background-video" loop>
-        <source src="media/background.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-
-    <!-- Overlay -->
-    <div id="overlay" onclick="startExperience()">
-        click to enter
+  <main class="container">
+    <div class="card">
+      <h1>Outcome Projects</h1>
+      <p class="muted">Clean builds. Practical tools.</p>
     </div>
 
-    <!-- Frosted Glass Container -->
-    <div class="frosted-glass" style="display: none;">
-        <img src="media/sekiro.gif" alt="Profile Picture" class="profile-pic">
-        <div class="user-title">post</div>
-        <div class="social-links">
-            <a href="https://steamcommunity.com/id/WorldWarII/" target="_blank">
-                <img src="media/steam-icon.png" alt="Steam">
-            </a>
-            <a href="https://www.youtube.com/@do" target="_blank">
-                <img src="media/youtube-icon.png" alt="YouTube">
-            </a>
-            <a href="https://github.com/outcome" target="_blank">
-                <img src="media/github-icon.png" alt="GitHub">
-            </a>
-        </div>
-        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.25">
-    </div>
+    <section class="card">
+      <h2>Projects</h2>
+      <div class="row">
+        <a class="pill" href="/PurityGuard/">PurityGuard</a>
+      </div>
+    </section>
 
-    <script>
-        function startExperience() {
-            document.getElementById('overlay').style.display = 'none';
-            document.querySelector('.frosted-glass').style.display = 'block';
-
-            const video = document.getElementById('background-video');
-            video.style.display = 'block';
-            video.muted = false;
-            video.volume = 0.25; // Set initial volume to 50%
-            video.play();
-
-            const volumeSlider = document.getElementById('volume-slider');
-            volumeSlider.value = 0.25; // Reset volume slider to 50%
-
-            volumeSlider.addEventListener('input', function() {
-                video.volume = this.value;
-            });
-        }
-    </script>
-
+    <section class="card">
+      <h2>Links</h2>
+      <div class="row">
+        <a class="pill" href="https://github.com/outcome">GitHub</a>
+        <a class="pill" href="https://youtube.com/flyffpax">YouTube</a>
+        <a class="pill" href="https://steamcommunity.com/id/WorldWarII">Steam</a>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
